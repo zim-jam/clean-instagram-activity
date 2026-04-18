@@ -146,10 +146,10 @@
     }
 
     console.log(
-      "⏳ Waiting 6 seconds for Instagram to refresh the DOM before starting next batch...",
+      "⏳ Waiting 15 seconds for Instagram to refresh the DOM before starting next batch...",
     );
 
-    await sleep(10000);
+    await sleep(15000);
   }
 
   console.log(
