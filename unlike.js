@@ -10,7 +10,6 @@
     let internalSelectedCount = 0;
     console.log("Starting new batch...");
 
-    // 1. Ensure "Select" mode is active
     let selectBtn = Array.from(document.querySelectorAll("div, span, button"))
       .find((el) => el.textContent.trim() === "Select" && el.offsetParent !== null);
     
@@ -75,8 +74,8 @@
         console.warn("Batch sequence failed. Retrying in 5s...");
         await sleep(5000);
       } else {
-        console.log("Batch successful. Waiting 10s for refresh...");
-        await sleep(10000);
+        console.log("Batch successful. Waiting 15s for refresh...");
+        await sleep(15000);
       }
 
       document.querySelectorAll(".script-clicked").forEach(el => el.classList.remove("script-clicked"));
