@@ -1,158 +1,100 @@
-(async function startInfiniteUnlike() {
-  console.log("🚀 INFINITE Precision Auto-Unlike Script Started");
+(async function startTrulyInfiniteUnlike() {
+  console.log("Auto-Unlike Script Started");
 
   const MAX_SELECT = 25;
-
   const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
-
-  const randomDelay = () =>
-    sleep(Math.floor(Math.random() * (400 - 150 + 1) + 150));
+  const fastDelay = () => sleep(Math.floor(Math.random() * (150 - 80) + 80)); 
 
   async function runBatch() {
     let internalSelectedCount = 0;
-
     console.log("▶️ Starting new batch...");
 
     let selectBtn = Array.from(document.querySelectorAll("div, span, button"))
-
       .find((el) => el.textContent.trim() === "Select");
-
+    
     if (selectBtn) {
-      console.log("✅ Clicking 'Select' button");
-
       selectBtn.click();
-
-      await sleep(1500);
-    }
-
-    async function processUnlike() {
-      console.log(
-        `🛑 Reached ${internalSelectedCount} items. Attempting to unlike...`,
-      );
-
-      let allElements = Array.from(document.querySelectorAll("span, div"));
-
-      let redUnlikeText = allElements.find(
-        (el) =>
-          el.textContent.trim() === "Unlike" &&
-          el.style.color &&
-          el.style.color.includes("254, 67, 88"),
-      );
-
-      if (!redUnlikeText) {
-        console.error(
-          "❌ ERROR: Could not find the red 'Unlike' text. Instagram may have rate-limited you.",
-        );
-
-        return false;
-      }
-
-      console.log("👉 Clicking the red 'Unlike' text...");
-
-      redUnlikeText.click();
-
-      await sleep(2000);
-
-      let modalElements = Array.from(
-        document.querySelectorAll('button, div[role="button"], span, div'),
-      );
-
-      let confirmBtn = modalElements.find(
-        (el) =>
-          el.textContent.trim() === "Unlike" &&
-          el !== redUnlikeText &&
-          el.closest('div[role="dialog"]'),
-      );
-
-      if (!confirmBtn) {
-        confirmBtn = Array.from(
-          document.querySelectorAll('button, div[role="button"]'),
-        )
-
-          .find((el) => el.textContent.trim() === "Unlike");
-      }
-
-      if (confirmBtn) {
-        console.log("💔 Clicking the final 'Unlike' confirmation button!");
-
-        confirmBtn.click();
-
-        console.log("✅ Batch complete!");
-
-        return true; // Success
-      } else {
-        console.error(
-          "❌ ERROR: Could not find the final 'Unlike' confirmation button.",
-        );
-
-        return false;
-      }
+      await sleep(1000);
     }
 
     async function selectItems() {
-      if (internalSelectedCount >= MAX_SELECT) {
+      const SELECTABLE_BTN_SELECTOR = 'div[data-testid="bulk_action_checkbox"]';
+      
+      while (internalSelectedCount < MAX_SELECT) {
+        let allCheckboxes = Array.from(document.querySelectorAll(SELECTABLE_BTN_SELECTOR));
+        let nextBtn = allCheckboxes.find(btn => !btn.classList.contains("script-clicked"));
+
+        if (!nextBtn) {
+          console.log("Scrolling for more items...");
+          window.scrollBy(0, 500);
+          await sleep(2000);
+          
+          allCheckboxes = Array.from(document.querySelectorAll(SELECTABLE_BTN_SELECTOR));
+          nextBtn = allCheckboxes.find(btn => !btn.classList.contains("script-clicked"));
+          
+          if (!nextBtn) {
+            console.log("No more items found even after scroll.");
+            break; 
+          }
+        }
+
+        nextBtn.click();
+        nextBtn.classList.add("script-clicked");
+        internalSelectedCount++;
+        await fastDelay(); 
+      }
+
+      if (internalSelectedCount > 0) {
         return await processUnlike();
       }
+      return false;
+    }
 
-      const SELECTABLE_BTN_SELECTOR = 'div[data-testid="bulk_action_checkbox"]';
-
-      let allCheckboxes = Array.from(
-        document.querySelectorAll(SELECTABLE_BTN_SELECTOR),
+    async function processUnlike() {
+      let allElements = Array.from(document.querySelectorAll("span, div"));
+      let redUnlikeText = allElements.find(
+        (el) => el.textContent.trim() === "Unlike" && 
+        getComputedStyle(el).color.includes("254, 67, 88")
       );
 
-      let nextBtn = allCheckboxes.find(
-        (btn) => !btn.classList.contains("script-clicked"),
-      );
-
-      if (!nextBtn) {
-        console.log(
-          `✅ No more posts found on screen. Selected ${internalSelectedCount} total.`,
-        );
-
-        if (internalSelectedCount > 0) {
-          return await processUnlike();
-        } else {
-          console.log("No unliked items left to process.");
-
-          return false;
-        }
+      if (!redUnlikeText) {
+        console.error("❌ Could not find red 'Unlike' text. Trying manual scroll.");
+        return false;
       }
 
-      nextBtn.click();
+      redUnlikeText.click();
+      await sleep(1500);
 
-      nextBtn.classList.add("script-clicked");
+      let confirmBtn = Array.from(document.querySelectorAll('button, div[role="button"]'))
+        .find(el => el.textContent.trim() === "Unlike" && el.offsetParent !== null);
 
-      internalSelectedCount++;
-
-      console.log(`✅ Selected item ${internalSelectedCount}/${MAX_SELECT}`);
-
-      await randomDelay();
-
-      return await selectItems();
+      if (confirmBtn) {
+        confirmBtn.click();
+        console.log("✅ Batch unlike confirmed.");
+        return true;
+      }
+      return false;
     }
 
     return await selectItems();
   }
 
   while (true) {
-    let batchSuccess = await runBatch();
-
-    if (!batchSuccess) {
-      console.warn(
-        "⚠️ Batch failed or list is empty. Terminating infinite loop to prevent page freeze.",
-      );
-
-      break;
+    try {
+      let success = await runBatch();
+      if (!success) {
+        console.log("Empty batch or error. Waiting longer before retry...");
+        await sleep(10000);
+      }
+      
+      console.log("⏳ Cooling down for 12s to avoid rate limits...");
+      await sleep(12000); 
+      
+      document.querySelectorAll(".script-clicked").forEach(el => el.classList.remove("script-clicked"));
+      
+    } catch (err) {
+      console.error("Critical error in loop:", err);
+      await sleep(5000);
     }
-
-    console.log(
-      "⏳ Waiting 15 seconds for Instagram to refresh the DOM before starting next batch...",
-    );
-
-    await sleep(15000);
   }
-
-  console.log(
-    "🏁 Infinite script has fully terminated. Refresh the page if you wish to start over.",
-  );
 })();
