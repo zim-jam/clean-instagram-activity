@@ -7,7 +7,7 @@
 
   async function runBatch() {
     let internalSelectedCount = 0;
-    console.log("▶️ Starting new batch...");
+    console.log("Starting new batch...");
 
     let selectBtn = Array.from(document.querySelectorAll("div, span, button"))
       .find((el) => el.textContent.trim() === "Select");
@@ -58,7 +58,7 @@
       );
 
       if (!redUnlikeText) {
-        console.error("❌ Could not find red 'Unlike' text. Trying manual scroll.");
+        console.error("Could not find red 'Unlike' text. Trying manual scroll.");
         return false;
       }
 
@@ -70,7 +70,7 @@
 
       if (confirmBtn) {
         confirmBtn.click();
-        console.log("✅ Batch unlike confirmed.");
+        console.log("Batch unlike confirmed.");
         return true;
       }
       return false;
@@ -87,7 +87,7 @@
         await sleep(10000);
       }
       
-      console.log("⏳ Cooling down for 12s to avoid rate limits...");
+      console.log("Cooling down for 12s to avoid rate limits...");
       await sleep(12000); 
       
       document.querySelectorAll(".script-clicked").forEach(el => el.classList.remove("script-clicked"));
